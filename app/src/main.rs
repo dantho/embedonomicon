@@ -9,6 +9,11 @@ use rt::entry;
 entry!(main);
 
 fn main() -> ! {
-    // this executes the undefined instruction (UDF) and causes a HardFault exception
     intrinsics::abort()
+}
+
+#[no_mangle]
+pub extern "C" fn HardFault() -> ! {
+    // do something interesting here
+    loop {}
 }
