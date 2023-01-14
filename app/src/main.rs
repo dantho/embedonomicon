@@ -1,19 +1,27 @@
-#![feature(core_intrinsics)]
 #![no_main]
 #![no_std]
 
-use core::intrinsics;
+use core::fmt::Write;
+use cortex_m_semihosting::{debug, hio};
 
 use rt::entry;
 
 entry!(main);
 
 fn main() -> ! {
-    intrinsics::abort()
-}
+    let mut hstdout = hio::hstdout().unwrap();
 
-#[no_mangle]
-pub extern "C" fn HardFault() -> ! {
-    // do something interesting here
+    #[export_name = "Hello, world!"]
+    static A: u8 = 0;
+
+    let _ = writeln!(hstdout, "{:#x}", &A as *const u8 as usize);
+
+    #[export_name = "Goodbye"]
+    static B: u8 = 0;
+
+    let _ = writeln!(hstdout, "{:#x}", &B as *const u8 as usize);
+
+    debug::exit(debug::EXIT_SUCCESS);
+
     loop {}
 }
