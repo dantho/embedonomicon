@@ -7,19 +7,18 @@ use cortex_m_semihosting::{
     hio::{self, HStdout},
 };
 
-use log::{global_logger, log, GlobalLog};
+#[allow(unused)]
+use stlog::{global_logger, GlobalLog, error, warn, info, debug, trace};
 use rt::entry;
 
 struct Logger;
 
-global_logger!(Logger);
-
 entry!(main);
 
 fn main() -> ! {
-    log!("Hello, world!");
+    error!("Hello, world!");
 
-    log!("Goodbye");
+    warn!("Goodbye");
 
     debug::exit(debug::EXIT_SUCCESS);
 
