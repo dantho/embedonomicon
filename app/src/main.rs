@@ -1,28 +1,34 @@
 #![no_main]
 #![no_std]
 
-use cortex_m_semihosting::{debug, hio};
+use cortex_m_semihosting::{
+    debug,
+    hio::{self, HStdout},
+};
 
+use log::{Log,log};
 use rt::entry;
+struct Logger {
+    hstdout: HStdout,
+}
+
+impl Log for Logger {
+    type Error = ();
+
+    fn log(&mut self, address: u8) -> Result<(), ()> {
+        self.hstdout.write_all(&[address])
+    }
+}
 
 entry!(main);
 
 fn main() -> ! {
-    let mut hstdout = hio::hstdout().unwrap();
+    let hstdout = hio::hstdout().unwrap();
+    let mut logger = Logger { hstdout };
 
-    #[export_name = "Hello, world!"]
-    #[link_section = ".log"] // <- NEW!
-    static A: u8 = 0;
+    let _ = log!(logger, "Hello, world!");
 
-    let address = &A as *const u8 as usize as u8;
-    hstdout.write_all(&[address]).unwrap(); // <- CHANGED!
-
-    #[export_name = "Goodbye"]
-    #[link_section = ".log"] // <- NEW!
-    static B: u8 = 0;
-
-    let address = &B as *const u8 as usize as u8;
-    hstdout.write_all(&[address]).unwrap(); // <- CHANGED!
+    let _ = log!(logger, "Goodbye");
 
     debug::exit(debug::EXIT_SUCCESS);
 
