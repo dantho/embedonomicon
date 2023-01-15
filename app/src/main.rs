@@ -43,3 +43,6 @@ impl GlobalLog for Logger {
         }).ok(); // `.ok()` = ignore errors
     }
 }
+
+#[global_logger]
+static LOGGER: Logger = Logger {};
