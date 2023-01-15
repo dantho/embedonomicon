@@ -6,8 +6,24 @@ use cortex_m_semihosting::{
     hio::{self, HStdout},
 };
 
-use log::{Log,log};
+use log::{error, warn, Log};
 use rt::entry;
+
+entry!(main);
+
+fn main() -> ! {
+    let hstdout = hio::hstdout().unwrap();
+    let mut logger = Logger { hstdout };
+
+    let _ = warn!(logger, "Hello, world!");
+    
+    let _ = error!(logger, "Goodbye"); // <- CHANGED!
+
+    debug::exit(debug::EXIT_SUCCESS);
+
+    loop {}
+}
+
 struct Logger {
     hstdout: HStdout,
 }
@@ -18,19 +34,4 @@ impl Log for Logger {
     fn log(&mut self, address: u8) -> Result<(), ()> {
         self.hstdout.write_all(&[address])
     }
-}
-
-entry!(main);
-
-fn main() -> ! {
-    let hstdout = hio::hstdout().unwrap();
-    let mut logger = Logger { hstdout };
-
-    let _ = log!(logger, "Hello, world!");
-
-    let _ = log!(logger, "Goodbye");
-
-    debug::exit(debug::EXIT_SUCCESS);
-
-    loop {}
 }
