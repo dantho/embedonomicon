@@ -3,35 +3,53 @@
 
 use cortex_m_semihosting::{
     debug,
-    hio::{self, HStdout},
+    hio,
 };
 
-use log::{error, warn, Log};
 use rt::entry;
+#[allow(unused)]
+use stlog::{error, warn, info, debug, trace, Log, GlobalLog, global_logger};
+
+// fn foo() {
+//     info!("Hello!");
+//     error!("Hey!");
+//     info!("Bye!");
+//     warn!("A warning: Watch out!");
+//     debug!("A diagnostic piece of information");
+//     trace!("You Are Here!");
+//     // info!("Hey!"); //~ ERROR symbol `Hey!` is already defined
+//     // warn!("Hey!"); //~ ERROR symbol `Bye!` is already defined
+// }
 
 entry!(main);
 
 fn main() -> ! {
-    let hstdout = hio::hstdout().unwrap();
-    let mut logger = Logger { hstdout };
-
-    let _ = warn!(logger, "Hello, world!");
+    warn!("Hello, world!");
     
-    let _ = error!(logger, "Goodbye"); // <- CHANGED!
+    error!("Goodbye"); // <- CHANGED!
 
     debug::exit(debug::EXIT_SUCCESS);
 
     loop {}
 }
 
-struct Logger {
-    hstdout: HStdout,
-}
+struct Logger;
 
 impl Log for Logger {
     type Error = ();
 
-    fn log(&mut self, address: u8) -> Result<(), ()> {
-        self.hstdout.write_all(&[address])
+    fn log(&mut self, address: u8) -> Result<(), Self::Error> {
+        let mut local = hio::hstdout().unwrap();
+        local.write_all(&[address])    
     }
 }
+
+impl GlobalLog for Logger {
+    fn log(&self, address: u8) {
+        let mut local = hio::hstdout().unwrap();
+        local.write_all(&[address]).unwrap();
+    }
+}
+
+#[global_logger]
+static LOGGER: Logger = Logger;
